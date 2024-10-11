@@ -1,18 +1,19 @@
 package com.aiinty.morsekey
 
+import android.content.Context
+import android.view.KeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,34 +27,48 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aiinty.morsekey.core.Constants
+import com.aiinty.morsekey.core.Morse
 
-// FIXME
 @Preview
 @Composable
 fun KeyboardScreen() {
     Column(
         modifier = Modifier
             .background(Color(0xffffffff))
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.Bottom
     ) {
         val code = remember { mutableStateOf("") }
+        val lang = remember { mutableStateOf(Constants.MorseLanguage.RU) }
 
-        FixedHeightBox(
-            Modifier.fillMaxWidth(),
-            height = 56.dp
+        Row (
+            verticalAlignment = Alignment.Bottom
         ) {
-            Row {
-                OutlinedTextField(
-                    value = code.value,
-                    onValueChange = { code.value = it },
-                    readOnly = true,
-                    modifier = Modifier.weight(4f)
-                )
-                KeyboardKey("<-", Modifier.weight(1f))
-            }
+            OutlinedTextField(
+                value = code.value,
+                onValueChange = { code.value = it },
+                readOnly = true,
+                modifier = Modifier.padding(start = 2.dp).weight(6f)
+            )
 
+            FixedHeightBox(
+                Modifier.fillMaxWidth().weight(1f),
+                height = 58.dp
+            ) {
+                KeyboardKey(keyboardKey = "<-", modifier = Modifier.weight(1f), 16.sp) { ctx: Context, _: String ->
+                    if (code.value.isEmpty()) {
+                        (ctx as IMEService).currentInputConnection.sendKeyEvent(
+                            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
+                        )
+                    } else {
+                        code.value = code.value.dropLast(1)
+                    }
+                }
+            }
         }
 
         FixedHeightBox(
@@ -61,8 +76,49 @@ fun KeyboardScreen() {
             height = 112.dp
         ) {
             Row {
-                KeyboardKey(".", Modifier.weight(1f))
-                KeyboardKey("-", Modifier.weight(1f))
+                KeyboardKey(keyboardKey = ".", modifier = Modifier.weight(1f), 64.sp) { _: Context, key: String ->
+                    code.value += key
+                }
+                KeyboardKey(keyboardKey = "-", modifier = Modifier.weight(1f), 64.sp) { _: Context, key: String ->
+                    code.value += key
+                }
+            }
+        }
+
+        FixedHeightBox(
+            Modifier.fillMaxWidth(),
+            height = 52.dp
+        ) {
+            Row {
+                KeyboardKey(keyboardKey = lang.value.name, modifier = Modifier.weight(1f), 16.sp) { _: Context, _: String ->
+                    lang.value = when (lang.value) {
+                        Constants.MorseLanguage.RU -> Constants.MorseLanguage.EN
+                        Constants.MorseLanguage.EN -> Constants.MorseLanguage.RU
+                    }
+                }
+
+                KeyboardKey(
+                    keyboardKey = "SPACE",
+                    modifier = Modifier.weight(3f),
+                    16.sp
+                ) { ctx: Context, key: String ->
+                    (ctx as IMEService).currentInputConnection.commitText(" ", key.length)
+                }
+
+                KeyboardKey(
+                    keyboardKey = "Enter",
+                    modifier = Modifier.weight(1f), 16.sp
+                ) { ctx: Context, _: String ->
+                    if (code.value.isEmpty()){
+                        (ctx as IMEService).currentInputConnection.sendKeyEvent(
+                            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
+                        )
+                    } else {
+                        val res = Morse.decode(code.value, lang.value)
+                        (ctx as IMEService).currentInputConnection.commitText(res, res.length)
+                        code.value = ""
+                    }
+                }
             }
         }
     }
@@ -86,11 +142,13 @@ fun FixedHeightBox(modifier: Modifier, height: Dp, content: @Composable () -> Un
 @Composable
 fun KeyboardKey(
     keyboardKey: String,
-    modifier: Modifier
+    modifier: Modifier,
+    fontSize: TextUnit,
+    onClick: (Context, String) -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed = interactionSource.collectIsPressedAsState()
-    val ctx = LocalContext.current
+    val context = LocalContext.current
 
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
         Text(
@@ -99,12 +157,7 @@ fun KeyboardKey(
                 .fillMaxWidth()
                 .padding(2.dp)
                 .border(1.dp, Color.Black)
-                .clickable(interactionSource = interactionSource, indication = null) {
-                    (ctx as IMEService).currentInputConnection.commitText(
-                        keyboardKey,
-                        keyboardKey.length
-                    )
-                }
+                .clickable(interactionSource = interactionSource, indication = null) { onClick(context, keyboardKey) }
                 .background(Color.White)
                 .padding(
                     start = 12.dp,
@@ -112,7 +165,7 @@ fun KeyboardKey(
                     top = 16.dp,
                     bottom = 16.dp
                 ),
-            fontSize = 48.sp,
+            fontSize = fontSize,
             textAlign = TextAlign.Center
         )
         if (pressed.value) {
@@ -128,7 +181,7 @@ fun KeyboardKey(
                         top = 16.dp,
                         bottom = 48.dp
                     ),
-                fontSize = 48.sp,
+                fontSize = fontSize,
                 textAlign = TextAlign.Center
             )
         }
