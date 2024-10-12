@@ -1,6 +1,7 @@
 package com.aiinty.morsekey
 
 import android.content.Context
+import android.content.res.Resources.Theme
 import android.view.KeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +23,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -37,13 +43,12 @@ import com.aiinty.morsekey.core.Morse
 @Composable
 fun KeyboardScreen() {
     Column(
-        modifier = Modifier
-            .background(Color(0xffffffff))
-            .fillMaxWidth(),
+        modifier = Modifier.background(Color(0xFFEAEAEA)).fillMaxWidth(),
         verticalArrangement = Arrangement.Bottom
     ) {
         val code = remember { mutableStateOf("") }
         val lang = remember { mutableStateOf(Constants.MorseLanguage.RU) }
+        val isCaps = remember { mutableStateOf(false) }
 
         Row (
             verticalAlignment = Alignment.Bottom
@@ -98,6 +103,14 @@ fun KeyboardScreen() {
                 }
 
                 KeyboardKey(
+                    keyboardKey = when(isCaps.value) { true -> "↟" false -> "↑" },
+                    modifier = Modifier.weight(1f),
+                    14.sp
+                ) { _: Context, _: String ->
+                    isCaps.value = !isCaps.value
+                }
+
+                KeyboardKey(
                     keyboardKey = "SPACE",
                     modifier = Modifier.weight(3f),
                     16.sp
@@ -106,15 +119,15 @@ fun KeyboardScreen() {
                 }
 
                 KeyboardKey(
-                    keyboardKey = "Enter",
-                    modifier = Modifier.weight(1f), 16.sp
+                    keyboardKey = "↩",
+                    modifier = Modifier.weight(1f), 14.sp
                 ) { ctx: Context, _: String ->
                     if (code.value.isEmpty()){
                         (ctx as IMEService).currentInputConnection.sendKeyEvent(
                             KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER)
                         )
                     } else {
-                        val res = Morse.decode(code.value, lang.value)
+                        val res = Morse.decode(code.value, lang.value, isCaps.value)
                         (ctx as IMEService).currentInputConnection.commitText(res, res.length)
                         code.value = ""
                     }
@@ -151,14 +164,16 @@ fun KeyboardKey(
     val context = LocalContext.current
 
     Box(modifier = modifier.fillMaxHeight(), contentAlignment = Alignment.BottomCenter) {
+        val shape = RoundedCornerShape(10)
         Text(
             keyboardKey,
             Modifier
                 .fillMaxWidth()
                 .padding(2.dp)
-                .border(1.dp, Color.Black)
-                .clickable(interactionSource = interactionSource, indication = null) { onClick(context, keyboardKey) }
-                .background(Color.White)
+                .border(1.dp, Color.Black, shape)
+                .clickable(interactionSource = interactionSource, indication = null) {
+                    onClick(context, keyboardKey)
+                }
                 .padding(
                     start = 12.dp,
                     end = 12.dp,
@@ -173,8 +188,9 @@ fun KeyboardKey(
                 keyboardKey,
                 Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.Black)
-                    .background(Color.White)
+                    .border(1.dp, Color.Black, shape)
+                    .clip(shape)
+                    .background(Color.Gray)
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
