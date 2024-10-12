@@ -1,4 +1,4 @@
-package com.aiinty.morsekey
+package com.aiinty.morsekey.ui.keyboard
 
 import android.content.Context
 import androidx.compose.runtime.Composable

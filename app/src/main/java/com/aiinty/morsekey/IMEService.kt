@@ -6,6 +6,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.aiinty.morsekey.ui.keyboard.ComposeKeyboardView
 
 class IMEService : LifecycleInputMethodService(),
     ViewModelStoreOwner,

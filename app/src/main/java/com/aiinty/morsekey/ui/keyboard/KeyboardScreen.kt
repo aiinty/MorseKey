@@ -1,7 +1,6 @@
-package com.aiinty.morsekey
+package com.aiinty.morsekey.ui.keyboard
 
 import android.content.Context
-import android.content.res.Resources.Theme
 import android.view.KeyEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,10 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -36,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aiinty.morsekey.IMEService
 import com.aiinty.morsekey.core.Constants
 import com.aiinty.morsekey.core.Morse
 
@@ -64,7 +61,11 @@ fun KeyboardScreen() {
                 Modifier.fillMaxWidth().weight(1f),
                 height = 58.dp
             ) {
-                KeyboardKey(keyboardKey = "<-", modifier = Modifier.weight(1f), 16.sp) { ctx: Context, _: String ->
+                KeyboardKey(
+                    keyboardKey = "<-",
+                    modifier = Modifier.weight(1f),
+                    16.sp
+                ) { ctx: Context, _: String ->
                     if (code.value.isEmpty()) {
                         (ctx as IMEService).currentInputConnection.sendKeyEvent(
                             KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL)
@@ -81,10 +82,17 @@ fun KeyboardScreen() {
             height = 112.dp
         ) {
             Row {
-                KeyboardKey(keyboardKey = ".", modifier = Modifier.weight(1f), 64.sp) { _: Context, key: String ->
+                KeyboardKey(keyboardKey = ".",
+                    modifier = Modifier.weight(1f),
+                    64.sp
+                ) { _: Context, key: String ->
                     code.value += key
                 }
-                KeyboardKey(keyboardKey = "-", modifier = Modifier.weight(1f), 64.sp) { _: Context, key: String ->
+                KeyboardKey(
+                    keyboardKey = "-",
+                    modifier = Modifier.weight(1f),
+                    64.sp
+                ) { _: Context, key: String ->
                     code.value += key
                 }
             }
@@ -95,7 +103,11 @@ fun KeyboardScreen() {
             height = 52.dp
         ) {
             Row {
-                KeyboardKey(keyboardKey = lang.value.name, modifier = Modifier.weight(1f), 16.sp) { _: Context, _: String ->
+                KeyboardKey(
+                    keyboardKey = lang.value.name,
+                    modifier = Modifier.weight(1f),
+                    16.sp
+                ) { _: Context, _: String ->
                     lang.value = when (lang.value) {
                         Constants.MorseLanguage.RU -> Constants.MorseLanguage.EN
                         Constants.MorseLanguage.EN -> Constants.MorseLanguage.RU
