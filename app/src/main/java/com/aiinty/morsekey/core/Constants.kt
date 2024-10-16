@@ -1,14 +1,22 @@
 package com.aiinty.morsekey.core
 
+/**
+ *  A class containing the necessary constants.
+ */
 class Constants {
 
+    /**
+     * An enum defining languages of morse.
+     */
     enum class MorseLanguage {
         RU,
         EN
     }
 
     companion object {
-
+        /**
+         * A russian morse code.
+         */
         val RU_MORSE = mapOf(
             ".-" to "а", "-..." to "б", ".--" to "в", "--." to "г", "-.." to "д",
             "." to "е", "...-" to "ж", "--.." to "з", ".." to "и", ".---" to "й",
@@ -23,7 +31,9 @@ class Constants {
             ".-..-." to "\"", "-....-" to "-", "-..-." to "/", "..--.-" to "_", "..--.." to "?",
             "--..--" to "!", ".-.-." to "+" ,
         )
-
+        /**
+         * An english morse code.
+         */
         val EN_MORSE = mapOf(
             ".-" to "a", "-..." to "b", "-.-." to "c", "-.." to "d", "." to "e",
             "..-." to "f", "--." to "g", "...." to "h", ".." to "i", ".---" to "j",
@@ -38,7 +48,5 @@ class Constants {
             "-.-.-." to ";", "-...-" to "=", ".-.-." to "+", "-....-" to "-", "..--.-" to "_",
             ".-..-." to "\"", "...-..-" to "$", ".--.-." to "@",
         )
-
     }
-
 }

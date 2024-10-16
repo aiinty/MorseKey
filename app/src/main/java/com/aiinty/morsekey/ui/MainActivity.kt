@@ -33,7 +33,6 @@ class MainActivity : ComponentActivity() {
                             label = { Text("Test here...") },
                         )
                     }
-
                 }
             }
         }
